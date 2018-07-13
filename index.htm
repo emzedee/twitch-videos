@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title>Twitch Viewer</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <style type="text/css">
+		.card {
+			width: 200px;
+		}
+		.bottom-left {
+    		position: absolute;
+    		bottom: 8px;
+    		left: 16px;
+		}
+	</style>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+</head>
+<body>
+    <main role="main">
+
+      <section class="jumbotron text-center">
+        <div class="container">
+          <h1 class="jumbotron-heading">Twitch.tv Top Videos</h1>
+          <p class="lead text-muted">Browse the top videos from Twitch.tv, or search by game.</p>
+          <div class="w-50 mx-auto text-left">
+          <form class="mt-2">
+          	<div class="form-group row">
+            	<label for="inputGame" class="col-sm-2 col-form-label">Game:</label>
+                <div class="col-sm-10">
+	                <input class="form-control" name="gameSearch" id="inputGame" type="text" placeholder="Game name" aria-label="Game">
+    			</div>
+             </div>
+             <div class="form-group row">
+                <label for="periodSearch" class="col-sm-2 col-form-label">Period:</label>
+                <div class="col-sm-10">
+                    <select class="custom-select" id="periodSearch">
+                        <option value="week">week</option>
+                        <option value="month">month</option>
+                        <option value="all">all</option>
+                    </select>
+                </div>
+             </div>
+             <fieldset class="form-group">
+             	<div class="row" id="broadcastSearch">
+                	<legend class="col-form-label col-sm-2 pt-0">Broadcast Type:</legend>
+                    <div class="col-sm-10">
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" value="highlight" id="broadcast_type1">
+                          <label class="custom-control-label" for="broadcast_type1">Highlight</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" value="archive" id="broadcast_type2">
+                          <label class="custom-control-label" for="broadcast_type2">Archive</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" value="upload" id="broadcast_type3">
+                          <label class="custom-control-label" for="broadcast_type3">Upload</label>
+                        </div>
+                    </div>
+                </div>
+             </fieldset>
+             <button class="btn btn-outline-primary my-2 my-sm-0" type="button" id="btnSearch">Search</button>
+          </form> 
+          </div>
+        </div>
+      </section>
+
+      <div class="album py-5 bg-light">
+        <div class="container">
+        	<div id="output"></div>
+            <div class="text-center" id="pagination">  
+              	<button class="btn btn-sm" type="button" id="btnPrev">Prev</button>
+                <button class="btn btn-sm" type="button" id="btnNext">Next</button>
+            </div>
+        </div> <!-- /.container -->
+      </div> <!-- /.album -->  
+  	</main>
+    
+    <div class="modal fade" id="videoDetails" tabindex="-1" role="dialog" aria-labelledby="videoDetailsLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalCenterTitle">Video Details</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          	<div class="position-relative">
+            	<img id="v_preview" class="img-fluid" src="https://static-cdn.jtvnw.net/s3_vods/e273175ca1_talespin_23680870240_548725280//thumb/thumb101568088-640x360.jpg">
+            	<div class="bottom-left alert alert-dark text-danger" role="alert"><small id="v_length">1272</small></div>
+            </div>
+            <div class="container-fluid">
+              <div class="row">
+              	<div class="col">
+                    <h5 class="text-primary" id="v_game">Overwatch</h5>
+                    <p class="text-muted">Broadcast Type: <span id="v_broadcast_type">highlight</span></p>
+                    <p id="v_title">Talespin vs Gods 1v1 (Pharah & Reinhardt)</p>
+                    <p id="v_description">gg</p>
+                    <p>Channel: <span class="text-success" id="v_display_name">Talespin</span></p>
+                </div>
+              </div>
+              <div class="row">
+              	<div class="col">
+	                <small>Views: <span id="v_views">33</span></small>
+                </div>
+                <div class="col">
+	                <small id="v_created_at">2016-11-17</small>
+                </div>
+              </div> <!-- /.row -->
+            </div> <!-- /.container -->            
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <a href="https://www.twitch.tv/talespin/v/101568088" id="v_link" role="button" class="btn btn-primary" target="_blank">Watch on Twitch.tv</a>
+          </div>
+        </div>
+      </div>
+    </div> <!-- /.modal -->
+    
+	<script type="text/javascript">
+	// Twitch vars
+	var twitchAPI = "https://api.twitch.tv/kraken/videos/";
+	var twHead = {"Client-ID" : "bouyhjd0ozkryiy63pa6mkp4bkkqe3",
+				"Accept": "application/vnd.twitchtv.v5+json" };
+	var twParams = {
+		limit: 8,
+		period: "week",
+		broadcast_type: 'archive,highlight,upload',
+		offset: 0
+		};
+	var videoObj = {};
+	
+	// Pagination
+	var page = 0;
+
+	var searchStr = "";
+	
+	function fmtTime(sec) {
+		// format seconds to hh:mm:ss
+		var d = new Date(null);
+		d.setSeconds(sec);
+		return d.toISOString().substr(11, 8);
+	}
+	
+	function loadTopVids() {
+		$.ajax({
+			url: twitchAPI + "top?" + $.param(twParams),
+			dataType: "json",
+			headers: twHead
+		})
+		.done(function( data ) {
+			loadCards(data);
+		})
+		.fail(function(jqxhr, textStatus, error ) {
+		var err = textStatus + ", " + error;
+		console.log("Reqest failed:" + err);
+		});
+	}
+	
+	function searchVids(str) {
+		var b_t = "";
+		$("#broadcastSearch input:checked").each(function() {
+			b_t = b_t + "," + $(this).val();
+		});
+		if (b_t.length > 1) {
+			twParams.broadcast_type = b_t.substr(1);
+		} else {
+			// Default all
+			twParams.broadcast_type = 'archive,highlight,upload';
+		}
+		twParams.period = $("#periodSearch").val();
+		twParams.game = str;
+		loadTopVids();	
+	}
+	
+	function loadCards(data) {
+		
+		videoObj = data.vods;
+		page = page + videoObj.length;
+		
+		// clear existing cards
+		$("#output").empty();
+		
+		var items = [];
+		var i = 0;
+		$.each( videoObj , function( key, val ) {
+			items.push('<div class="col col-md-3"><div class="card mb-4 box-shadow"><img class="card-img-top" src="' + val.thumbnails.medium[0].url + '"><div class="card-body"><h5>' + val.game + '</h5><p class="card-text">' + val.title + '</p><button type="button" class="btn btn-secondary btn-sm" onClick="loadVideo(' + i + ');">Video Details</button><!-- <div class="d-flex justify-content-between"><small class="card-text">Views: ' + val.views + '</small><small class="card-text">' + val.created_at.substr(0,10) + '</small></div> --></div></div></div>');
+			i++;
+		});
+		
+		$("<div/>", {
+			"class": "row",
+			html: items.join("")
+		}).appendTo("#output");
+	}
+	
+	function loadVideo(id) {
+		// populate Video Display screen
+		$(".modal #v_preview").attr( "src", videoObj[id].preview.large );
+		$(".modal #v_game").text(videoObj[id].game);
+		$(".modal #v_broadcast_type").text(videoObj[id].broadcast_type);
+		$(".modal #v_title").text(videoObj[id].title);
+		$(".modal #v_display_name").text(videoObj[id].channel.display_name);
+		$(".modal #v_description").text(videoObj[id].description);
+		$(".modal #v_views").text(videoObj[id].views);
+		$(".modal #v_length").text(fmtTime(videoObj[id].length));
+		$(".modal #v_created_at").text(videoObj[id].created_at.substr(0,10));
+		$(".modal #v_link").attr( "href", videoObj[id].url);
+		$("#videoDetails").modal('show');
+	}
+	
+	$("document").ready(function() {
+	
+		loadTopVids();
+		
+		//process buttons
+		$("#btnSearch").click(function () {
+			page = 0;
+			twParams.offset = 0;
+			searchStr = $("input[name='gameSearch']").val();
+			searchVids(searchStr);
+		});
+	    $("#btnPrev").click(function () {
+			if (twParams.offset-8 >= 0) {
+				page = twParams.offset - 8;
+				twParams.offset = page;
+				loadTopVids();
+			}
+		});
+	    $("#btnNext").click(function () {
+			if (Number.isInteger(page/8)) {
+				twParams.offset = page;
+				loadTopVids();
+			}
+		});
+	});
+	</script>
+</body>
+</html> 
